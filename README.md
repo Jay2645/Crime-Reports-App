@@ -6,3 +6,5 @@ Created for CSUF's Software Engineering class.
 ## Dependencies:
 
 `crimereports`
+
+`toga`
