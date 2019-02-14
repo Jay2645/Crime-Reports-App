@@ -40,7 +40,7 @@ def crime_refresh():
     all_crimes = crime_api.get_crimes()
 
     for crime_report in all_crimes:
-        crime = Label(reportFrame, text="Crimes", bg="LightSteelBlue3", fg="dark slate gray", font = ("verdana", 10), relief = "groove", pady = 5)
+        crime = Label(reportFrame, bg="LightSteelBlue3", fg="dark slate gray", font = ("verdana", 10), relief = "groove", pady = 5)
         print(crime_report)
 
         #Get current time
