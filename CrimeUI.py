@@ -2,8 +2,11 @@ from tkinter import *
 from datetime import *
 from tkinter import ttk
 
+from CrimeAPI import GetCrime
+
 #Window
 window = Tk()
+crime_api = GetCrime()
 
 #Entry for Location
 location = Entry()
@@ -31,6 +34,10 @@ crimeFrameUI.configure(height = 600, width = 1000)
 def crime_refresh():
     global counter
     global time1
+    global crime_api
+
+    crime_api.update_query(33.7214127465601, -118.00509452819823, 300, 10)
+    all_crimes = crime_api.get_crimes()
 
     crime = Label(reportFrame, text="crime", bg="LightSteelBlue3", fg="dark slate gray", font = ("verdana", 10), relief = "groove", pady = 5)
 
