@@ -36,7 +36,7 @@ def crime_refresh():
     global time1
     global crime_api
 
-    crime_api.update_query(33.7214127465601, -118.00509452819823, 300, 10)
+    crime_api.update_query(33.7214127465601, -118.00509452819823, 10, 2)
     all_crimes = crime_api.get_crimes()
 
     for crime_report in all_crimes:
