@@ -14,4 +14,4 @@ Install the following packages using [pip](https://pip.pypa.io/en/stable/install
 `toga`
 
 Backlog and Meeting Notes
-ttps://drive.google.com/drive/folders/10DQWoC_y__DAOHcs8s8EZeTuPniETj2X?usp=sharing
+https://drive.google.com/drive/folders/10DQWoC_y__DAOHcs8s8EZeTuPniETj2X?usp=sharing
