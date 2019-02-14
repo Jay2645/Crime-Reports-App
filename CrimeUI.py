@@ -39,18 +39,20 @@ def crime_refresh():
     crime_api.update_query(33.7214127465601, -118.00509452819823, 300, 10)
     all_crimes = crime_api.get_crimes()
 
-    crime = Label(reportFrame, text="crime", bg="LightSteelBlue3", fg="dark slate gray", font = ("verdana", 10), relief = "groove", pady = 5)
+    for crime_report in all_crimes:
+        crime = Label(reportFrame, text="Crimes", bg="LightSteelBlue3", fg="dark slate gray", font = ("verdana", 10), relief = "groove", pady = 5)
+        print(crime_report)
 
-    #Get current time
-    time2 = datetime.now().strftime('%H : %M : %S : %f')
+        #Get current time
+        time2 = datetime.now().strftime('%H : %M : %S : %f')
 
-    #Update time
-    if time2 != time1:
-        time1 = time2
-        crime.config(text = "lat/long " + time2 + ", crime type" )
+        #Update time
+        if time2 != time1:
+            time1 = time2
+            crime.config(text = "Type: " + crime_report['type'] + ", Lat: " + str(crime_report['lat']) + "/long: " + str(crime_report['lon']) + ", time: " + crime_report['timestamp'] + ", location: " + crime_report['location'])
 
-    crime.grid(row = counter, column = 0, ipady = 6, sticky = N+W+E+S, padx = 10, ipadx = 35)
-    counter += 1
+        crime.grid(row = counter, column = 0, ipady = 6, sticky = N+W+E+S, padx = 10, ipadx = 35)
+        counter += 1
 
 #Frame for map
 mapFrame = ttk.Frame(crimeFrameUI)
