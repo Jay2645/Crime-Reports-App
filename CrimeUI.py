@@ -3,6 +3,7 @@ from datetime import *
 from tkinter import ttk
 
 from CrimeAPI import GetCrime
+from display_map import getMap
 
 #Window
 window = Tk()
@@ -60,7 +61,10 @@ mapFrame = ttk.Frame(crimeFrameUI)
 mapFrame.grid_columnconfigure(0, weight=1)
 mapFrame.grid(row = 1, column = 0, sticky = "news")
 mapFrame.configure(height = 400, width = 110)
-mapImage = Label(mapFrame, text = "MAP WILL BE DISPLAYED HERE", bg = "green")
+#mapImage = Label(mapFrame, text = "MAP WILL BE DISPLAYED HERE", bg = "green")
+getMap(lat=33.8813416, lng=-117.8866257,zoom=16,width=110,height=400,format="png")
+mapImage = PhotoImage(file="map.png") #this variable needs to stay so the reference to the image stays alive
+mapLabel = Label(mapFrame, image=mapImage)
 
 #Frame for buttons
 buttonFrame = ttk.Frame(crimeFrameUI)
@@ -82,6 +86,6 @@ refreshBtn = Button(reportFrame, text = "Refresh", fg = "dark slate gray", bg = 
 location.grid(row = 0, column = 0, pady = 5, padx = 5, ipady = 6, ipadx = 100)
 locationBtn.grid(row = 0, column = 1, pady = 5, padx = 5, ipadx = 14, ipady = 4)
 refreshBtn.grid(row = 0, column = 2, pady = 5, ipadx = 14, ipady = 4, padx = 5)
-mapImage.grid(row = 0, column = 0, ipadx = 160, ipady = 250)
+mapLabel.grid(row = 0, column = 0, ipadx = 160, ipady = 250)
 
 window.mainloop()
