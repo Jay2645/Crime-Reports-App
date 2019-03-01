@@ -33,9 +33,9 @@ def get_lat_lng(address):
 		params["address"]=address
 		params["key"]=api_key
 		res = requests.get("https://maps.googleapis.com/maps/api/geocode/json", params=params)
-		res = json.loads(res.content)
+		res = json.loads(res.text)
 		try:
-			return {"lat":res["geometry"]["lat"],"lng":res["geometry"]["lng"]}
+			return {"lat":res["results"][0]["geometry"]["location"]["lat"],"lng":res["results"][0]["geometry"]["location"]["lng"]}
 		except:
 			return None
 
