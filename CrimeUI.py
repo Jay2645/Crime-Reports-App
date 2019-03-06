@@ -10,18 +10,24 @@ CSUF_LAT = 33.8813416
 CSUF_LNG = -117.8866257
 
 WINDOW_HEIGHT = 600
-WINDOW_WIDTH = 1000
+WINDOW_WIDTH = 1200
 
 MAP_HEIGHT = 400
 MAP_WIDTH = 400
 MAP_FILENAME = "map"
 MAP_EXTENSION = "png"
 
+BUTTON_FOREGROUND = "dark slate gray"
+BUTTON_BACKGROUND = "LightSteelBlue3"
+
+LABEL_FONT = ("verdana", 8)
+BUTTON_FONT = ("verdana", 10, "bold")
+
 class CrimeUI(object):
-	def __init__(self, address = ""):
+	def __init__(self, address = "", radius = 10, in_days = 2):
 		self.address = address
-		self.crime_radius = 10
-		self.crime_days_filter = 2
+		self.crime_radius = radius
+		self.crime_days_filter = in_days
 
 		# GPS functionality if applicable - mobile only (should support both iphone and android)
 		try:
@@ -40,7 +46,7 @@ class CrimeUI(object):
 				# If no GPS, default location to CSUF
 				self.my_loc["lat"]= CSUF_LAT
 				self.my_loc["lng"]= CSUF_LNG
-				print("Not using GPS, defaulting to CSUF location at " + str(self.my_loc))
+				print("Not using GPS, default location set to CSUF at " + str(self.my_loc))
 		
 		self.window = Tk()
 
@@ -78,10 +84,10 @@ class CrimeUI(object):
 		self.buttonFrame.grid_columnconfigure(0, weight = 1)
 		self.buttonFrame.grid(row = 0, column = 1, sticky = "news")
 		self.buttonFrame.configure(height = 50, width = 100)
-		self.location = Entry(self.buttonFrame, font = ("verdana", 10))
+		self.location = Entry(self.buttonFrame, font = BUTTON_FONT)
 		self.location.insert(0, self.address)
 
-		self.locationBtn = Button(self.buttonFrame, command=self._refresh_map, text = "Location", fg = "dark slate gray", bg = "LightSteelBlue3", width = 8, font = ("verdana", 10, "bold"))
+		self.locationBtn = Button(self.buttonFrame, command=self._refresh_map, text = "Location", fg = BUTTON_FOREGROUND, bg = BUTTON_BACKGROUND, width = 8, font = BUTTON_FONT)
 
 		#Frame for reports
 		self._create_report_frame()
@@ -97,7 +103,7 @@ class CrimeUI(object):
 		self.reportFrame.grid_columnconfigure(1, weight=1)
 		self.reportFrame.grid(row = 1, column = 1, sticky = "news")
 		self.reportFrame.configure(height = 600, width = 110)
-		self.refreshBtn = Button(self.reportFrame, text = "Refresh Crime List", fg = "dark slate gray", bg = "LightSteelBlue3", width = 8, command = self._crime_refresh, font = ("verdana", 10, "bold"))
+		self.refreshBtn = Button(self.reportFrame, text = "Refresh Crime List", fg = BUTTON_FOREGROUND, bg = BUTTON_BACKGROUND, width = 8, command = self._crime_refresh, font = BUTTON_FONT)
 		self.refreshBtn.grid(row = 0, column = 2, pady = 5, ipadx = 14, ipady = 4, padx = 5)
 		
 	#GPS Update Callback
@@ -109,19 +115,10 @@ class CrimeUI(object):
 
 	#Crime Refresher Function
 	def _crime_refresh(self):
-		self._create_report_frame()
-
 		self.crime_api.update_query(self.my_loc["lat"], self.my_loc["lng"], self.crime_radius, self.crime_days_filter)
 		all_crimes = self.crime_api.get_crimes()
-		
-		counter = 0
-		
-		for crime_report in all_crimes:
-			crime = Label(self.reportFrame, bg="LightSteelBlue3", fg="dark slate gray", font = ("verdana", 8), relief = "groove", pady = 5)
-			crime.config(text = crime_report['type'] + " at " + crime_report['timestamp'] + ". Location: " + crime_report['location'])
+		self.update_crimes(all_crimes)
 
-			crime.grid(row = counter, column = 0, ipady = 6, sticky = N+W+E+S, padx = 10, ipadx = 35)
-			counter += 1
 
 	#Location Button callback to download a new map
 	def _refresh_map(self):
@@ -152,6 +149,17 @@ class CrimeUI(object):
 				print("Could not load map for " + self.location.get())
 		else:
 			print("Passed in a null location!")
+
+	def update_crimes(self, crimes_list):
+		# Re-create the frame holding all the crime reports
+		self._create_report_frame()		
+		counter = 0
+		for crime_report in crimes_list:
+			crime = Label(self.reportFrame, bg=BUTTON_BACKGROUND, fg=BUTTON_FOREGROUND, font = LABEL_FONT, relief = "groove", pady = 5)
+			crime.config(text = crime_report['type'] + " at " + crime_report['timestamp'] + ". Location: " + crime_report['location'])
+
+			crime.grid(row = counter, column = 0, ipady = 6, sticky = N+W+E+S, padx = 10, ipadx = 35)
+			counter += 1
 
 	def create_window(self):
 		self._refresh_map()
