@@ -1,10 +1,13 @@
+# Import UI elements
 from tkinter import *
-from datetime import *
-from plyer import gps
 from tkinter import ttk
 
+# Import GPS stuff
+from plyer import gps
+
+# Import APIs
 from CrimeAPI import GetCrime
-from googlemap_utils import getMap, get_lat_lng
+from googlemap_utils import get_map, get_lat_lng
 
 CSUF_LAT = 33.8813416
 CSUF_LNG = -117.8866257
@@ -28,8 +31,9 @@ class CrimeUI(object):
 		self.address = address
 		self.crime_radius = radius
 		self.crime_days_filter = in_days
+		self.crime_count = 0
 
-		# GPS functionality if applicable - mobile only (should support both iphone and android)
+		# GPS functionality if applicable - mobile only (should support both iPhone and android)
 		try:
 			gps.configure(on_location=self._update_loc) # Configs gps object to use update_loc function as a callback
 			gps.start(minTime=10000, minDistance=1) # Poll every 10 seconds
@@ -46,7 +50,7 @@ class CrimeUI(object):
 				# If no GPS, default location to CSUF
 				self.my_loc["lat"]= CSUF_LAT
 				self.my_loc["lng"]= CSUF_LNG
-				print("Not using GPS, default location set to CSUF at " + str(self.my_loc))
+				print("Not using GPS, default location set to " + str(self.my_loc))
 		
 		self.window = Tk()
 
@@ -74,7 +78,7 @@ class CrimeUI(object):
 		self.mapFrame.configure(height = MAP_HEIGHT, width = MAP_WIDTH)
 
 		# Map image
-		getMap(lat=self.my_loc["lat"], lng=self.my_loc["lng"],zoom=15,width=MAP_WIDTH,height=MAP_HEIGHT,format=MAP_EXTENSION)
+		get_map(lat=self.my_loc["lat"], lng=self.my_loc["lng"],zoom=15,width=MAP_WIDTH,height=MAP_HEIGHT,format=MAP_EXTENSION)
 		mapImage = PhotoImage(file=MAP_FILENAME + "." + MAP_EXTENSION) #this variable needs to stay so the reference to the image stays alive
 		self.mapLabel = Label(self.mapFrame, image=mapImage)
 		self.mapLabel.pack()
@@ -128,6 +132,7 @@ class CrimeUI(object):
 		except NameError:
 			# Use cached location
 			pass
+			
 		if self.address == "":
 			new_loc = self.my_loc
 		else:
@@ -140,7 +145,7 @@ class CrimeUI(object):
 		if new_loc is not None:
 			print("Creating an image at: " + str(new_loc))
 			self.my_loc = new_loc
-			if getMap(self.my_loc["lat"], self.my_loc["lng"], zoom=15, width=MAP_WIDTH, height=MAP_HEIGHT, format=MAP_EXTENSION):
+			if get_map(self.my_loc["lat"], self.my_loc["lng"], zoom=15, width=MAP_WIDTH, height=MAP_HEIGHT, format=MAP_EXTENSION):
 				mapImage = PhotoImage(file=MAP_FILENAME + "." + MAP_EXTENSION)
 				self.mapLabel.configure(image=mapImage)
 				self.mapLabel.image = mapImage
@@ -150,16 +155,24 @@ class CrimeUI(object):
 		else:
 			print("Passed in a null location!")
 
-	def update_crimes(self, crimes_list):
-		# Re-create the frame holding all the crime reports
+	# Removes all crime data from the list and resets the crime count
+	def remove_crime_list(self):
 		self._create_report_frame()		
-		counter = 0
+		self.crime_count = 0
+
+	# Updates the list of crimes with the given list
+	def update_crimes(self, crimes_list):
+		self.remove_crime_list()
+
+		# Re-create the frame holding all the crime reports
 		for crime_report in crimes_list:
 			crime = Label(self.reportFrame, bg=BUTTON_BACKGROUND, fg=BUTTON_FOREGROUND, font = LABEL_FONT, relief = "groove", pady = 5)
 			crime.config(text = crime_report['type'] + " at " + crime_report['timestamp'] + ". Location: " + crime_report['location'])
 
-			crime.grid(row = counter, column = 0, ipady = 6, sticky = N+W+E+S, padx = 10, ipadx = 35)
-			counter += 1
+			crime.grid(row = self.crime_count, column = 0, ipady = 6, sticky = N+W+E+S, padx = 10, ipadx = 35)
+			self.crime_count += 1
+
+		print("Found " + str(self.crime_count) + " crimes.")
 
 	def create_window(self):
 		self._refresh_map()

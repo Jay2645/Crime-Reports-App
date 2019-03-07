@@ -6,7 +6,7 @@ from tkinter import PhotoImage
 import requests
 
 #Downloads a static png of the map with the given parameters. Returns true or false based on success
-def getMap(lat=0,lng=0,zoom=16,width=400,height=500,format='png'):
+def get_map(lat=0,lng=0,zoom=16,width=400,height=500,format='png'):
 	with open("google_maps_api_key.txt", "r") as fh:
 		api_key = fh.readline()
 		fh.close()
