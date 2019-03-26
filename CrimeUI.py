@@ -1,6 +1,7 @@
 # Import UI elements
 from tkinter import *
 from tkinter import ttk
+import os.path
 import toga
 from toga.style.pack import *
 
@@ -128,8 +129,10 @@ class TogaUI(object):
 		box = toga.Box()
 
 		#make children boxes for different sections of layout
-		box_a = toga.Box('box_a')
+		self.map_image = None
+		self.box_a = toga.ImageView(id='box_a',image=self.map_image)
 		box_b = toga.Box('box_b')
+		box_b.style.direction='column'
 
 		#box = toga.Box('box', children=[box_a, box_b])
 
@@ -144,22 +147,21 @@ class TogaUI(object):
 		self.refreshBut = toga.Button('Refresh Crime List', on_press=self.refresh_crime_delegate)
 		self.locationInput = toga.TextInput(placeholder = self.address)
 
-		self.locationBut.style.padding = (0, 0, 50, 50)
-		self.locationBut.style.flex = 0
-		self.refreshBut.style.padding = (0, 0, 100, 100)
-		self.refreshBut.style.flex = 0
+		#self.locationBut.style.padding = (0, 0, 50, 50)
+		#self.locationBut.style.flex = 0
+		#self.refreshBut.style.padding = (0, 0, 100, 100)
+		#self.refreshBut.style.flex = 0
 
 		self.locationInput.style.update(flex=1, padding_bottom=0)
-
+		box_b.add(self.locationInput)
 		box_b.add(self.locationBut)
 		box_b.add(self.refreshBut)
-		box_b.add(self.locationInput)
 
-		split = toga.SplitContainer()
+		self.split = toga.SplitContainer()
 
-		split.content = [box_a, box_b]
+		self.split.content = [self.box_a, box_b]
 
-		return split
+		return self.split
 
 	# Create report frame
 	# This gets run whenever we poll for new crime events, to prevent duplicate entries
@@ -176,9 +178,8 @@ class TogaUI(object):
 			print("Creating an image at: " + str(new_loc))
 			self.my_loc = new_loc
 			if get_map(self.my_loc["lat"], self.my_loc["lng"], zoom=15, width=MAP_WIDTH, height=MAP_HEIGHT, format=MAP_EXTENSION):
-				# TODO: Take the map image that gets created here and display it in Toga
-				# https://toga.readthedocs.io/en/latest/reference/api/widgets/imageview.html
-				pass
+				self.map_image = toga.Image(path.join(path.dirname(os.path.abspath(__file__)), MAP_FILENAME + "." + MAP_EXTENSION))
+				self.box_a.refresh()
 			else:
 				print("Could not load map for " + self.get_current_address())
 		else:

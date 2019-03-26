@@ -1,5 +1,3 @@
-from CrimeUI import CrimeUI
+from CrimeUI import TogaUI
 
-crime_window = CrimeUI("800 N State College Blvd, Fullerton, CA 92831")
-# This will lock the thread
-crime_window.create_window()
+crime_window = TogaUI("800 N State College Blvd, Fullerton, CA 92831", None, None).window.main_loop()
