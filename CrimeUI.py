@@ -191,7 +191,9 @@ class TogaUI(object):
 
 		if self.my_loc is not None:
 			if get_map(self.my_loc["lat"], self.my_loc["lng"], zoom=15, width=MAP_WIDTH, height=MAP_HEIGHT, format=MAP_EXTENSION):
-				self.map_image = toga.Image("../" + MAP_FILENAME + "." + MAP_EXTENSION)
+				image_path = "../" + MAP_FILENAME + "." + MAP_EXTENSION
+				self.map_image = toga.Image(image_path)
+				print("Updating image at " + str(self.my_loc) + " using image at " + image_path)
 				self.map_view.refresh()
 				self.box_a.refresh()
 			else:
