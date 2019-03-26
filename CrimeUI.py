@@ -117,11 +117,11 @@ class TkinterUI(object):
 		self.window.mainloop()
 
 class TogaUI(object):
-	def __init__(self, address, refresh_crime_delegate, map_refresh_delegate):
+	def __init__(self, address, refresh_crime_delegate):
 		self.refresh_crime_delegate = refresh_crime_delegate
-		self.map_refresh_delegate = map_refresh_delegate
 		self.address = address
 		self.locationInput = None
+		self.my_loc = {'lat':CSUF_LAT,'lng':CSUF_LNG}
 
 		self.window = toga.App('Crime Busters', 'dummy', startup=self.build)
 
@@ -143,7 +143,7 @@ class TogaUI(object):
 
 		#container.vertical = True
 
-		self.locationBut = toga.Button('Location', on_press=self.map_refresh_delegate)
+		self.locationBut = toga.Button('Location', on_press=self.map_refresh)
 		self.refreshBut = toga.Button('Refresh Crime List', on_press=self.refresh_crime_delegate)
 		self.locationInput = toga.TextInput(placeholder = self.address)
 
@@ -173,19 +173,19 @@ class TogaUI(object):
 	def create_crime_frame(self, crime_report):
 		pass
 
-	def create_map_image(self, new_loc):
-		if new_loc is not None:
-			print("Creating an image at: " + str(new_loc))
-			self.my_loc = new_loc
+	def map_refresh(self, widget):
+		if len(self.locationInput.value)>0:
+			self.my_loc = get_lat_lng(self.locationInput.value)
+		if self.my_loc is not None:
+			print("Creating an image at: " + str(self.my_loc))
 			if get_map(self.my_loc["lat"], self.my_loc["lng"], zoom=15, width=MAP_WIDTH, height=MAP_HEIGHT, format=MAP_EXTENSION):
-				self.map_image = toga.Image(path.join(path.dirname(os.path.abspath(__file__)), MAP_FILENAME + "." + MAP_EXTENSION))
+				self.map_image = toga.Image(os.path.join(os.path.dirname(os.path.abspath(__file__)), MAP_FILENAME + "." + MAP_EXTENSION))
 				self.box_a.refresh()
 			else:
 				print("Could not load map for " + self.get_current_address())
 		else:
-			print("Passed in a null location!")
-
-
+			print("Cannot generate a map for no location!")
+	
 	def get_current_address(self):
 		if self.locationInput == None:
 			return self.address
