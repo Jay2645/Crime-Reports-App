@@ -115,14 +115,15 @@ class TkinterUI(object):
 	def create_window(self):
 		self.window.mainloop()
 
-class TogaUI(object):
-	def __init__(self, address, refresh_crime_delegate):
+class TogaUI(toga.App):
+	def __init__(self, address, refresh_crime_delegate, refresh_map_delegate):
+		super().__init__('Crime Busters', 'dummy', startup=self.build)
 		self.refresh_crime_delegate = refresh_crime_delegate
+		self.refresh_map_delegate = refresh_map_delegate
 		self.address = address
 		self.locationInput = None
 		self.my_loc = {'lat':CSUF_LAT,'lng':CSUF_LNG}
-
-		self.window = toga.App('Crime Busters', 'dummy', startup=self.build)
+		self.box_a = None
 
 	def build(self, app):
 		#box = toga.Box()
@@ -143,7 +144,7 @@ class TogaUI(object):
 
 		#container.vertical = True
 
-		self.locationBut = toga.Button('Location', on_press=self.map_refresh)
+		self.locationBut = toga.Button('Location', on_press=self.refresh_map_delegate)
 		self.refreshBut = toga.Button('Refresh Crime List', on_press=self.refresh_crime_delegate)
 		self.locationInput = toga.TextInput(placeholder = self.address)
 
@@ -170,10 +171,9 @@ class TogaUI(object):
 		self.box = toga.Box('main_box')
 		self.box.add(self.box_a)
 		self.box.add(box_b)
+		#self.refresh_map_delegate()
+
 		return self.box
-		#self.split = toga.SplitContainer(direction=toga.SplitContainer.VERTICAL)
-		#self.split.content = [self.box_a, box_b]
-		#return self.split
 
 	# Create report frame
 	# This gets run whenever we poll for new crime events, to prevent duplicate entries
@@ -185,15 +185,19 @@ class TogaUI(object):
 	def create_crime_frame(self, crime_report):
 		pass
 
-	def map_refresh(self, widget):
-		if len(self.locationInput.value)>0:
-			self.my_loc = get_lat_lng(self.locationInput.value)
-		if self.my_loc is not None:
-			print("Creating an image at: " + str(self.my_loc))
-			if get_map(self.my_loc["lat"], self.my_loc["lng"], zoom=15, width=MAP_WIDTH, height=MAP_HEIGHT, format=MAP_EXTENSION):
-				self.map_image = toga.Image("../" + MAP_FILENAME + "." + MAP_EXTENSION)
-				self.map_view.refresh()
-				self.box_a.refresh()
+	def create_map_image(self, my_loc):
+		if self.box_a is None:
+			# No UI made yet
+			print("Skipping map refresh since the UI has not been created.")
+			return
+
+		if my_loc is not None:
+			if get_map(my_loc["lat"], my_loc["lng"], zoom=15, width=MAP_WIDTH, height=MAP_HEIGHT, format=MAP_EXTENSION):
+				image_path = "../" + MAP_FILENAME + "." + MAP_EXTENSION
+				self.map_image = toga.Image(image_path)
+				self.map_view.image = self.map_image
+				print("Updating image at " + str(my_loc) + " using image at " + image_path)
+				self.main_window.refresh()
 			else:
 				print("Could not load map for " + self.get_current_address())
 		else:
@@ -206,7 +210,7 @@ class TogaUI(object):
 			return self.locationInput.value
 
 	def create_window(self):
-		self.window.main_loop()
+		self.main_loop()
 
 
 class CrimeUI(object):
@@ -240,7 +244,8 @@ class CrimeUI(object):
 		self._create_frames()
 
 	def _create_frames(self):
-		get_map(lat=self.my_loc["lat"], lng=self.my_loc["lng"],zoom=15,width=MAP_WIDTH,height=MAP_HEIGHT,format=MAP_EXTENSION)
+		#get_map(lat=self.my_loc["lat"], lng=self.my_loc["lng"],zoom=15,width=MAP_WIDTH,height=MAP_HEIGHT,format=MAP_EXTENSION)
+		#^this gets called in TogaUI.build
 		if USE_TOGA:
 			self.window = TogaUI(self.address, self._crime_refresh, self._refresh_map)
 		else:
