@@ -1,6 +1,8 @@
 # Import UI elements
 from tkinter import *
 from tkinter import ttk
+import toga
+from toga.style.pack import *
 
 # Import GPS stuff
 from plyer import gps
@@ -25,6 +27,8 @@ BUTTON_BACKGROUND = "LightSteelBlue3"
 
 LABEL_FONT = ("verdana", 8)
 BUTTON_FONT = ("verdana", 10, "bold")
+
+USE_TOGA = False
 
 class CrimeUI(object):
 	def __init__(self, address = "", radius = 10, in_days = 2):
@@ -52,63 +56,72 @@ class CrimeUI(object):
 				self.my_loc["lng"]= CSUF_LNG
 				print("Not using GPS, default location set to " + str(self.my_loc))
 		
-		self.window = Tk()
+		self._create_frames()
 
-		#Configuration for window GUI
-		self.window.title("Crime Reports")
-		self.window.geometry(str(WINDOW_WIDTH) + "x" + str(WINDOW_HEIGHT))
-		self.window.configure(bg = "ivory3")
+	def _create_frames(self):
+		if USE_TOGA:
+			pass
+		else:
+			self.window = Tk()
 
-		self.crime_api = GetCrime()
-		self.location = Entry()
+			#Configuration for window GUI
+			self.window.title("Crime Reports")
+			self.window.geometry(str(WINDOW_WIDTH) + "x" + str(WINDOW_HEIGHT))
+			self.window.configure(bg = "ivory3")
 
-		#Scrollbar
-		self.scrollbar = Scrollbar(self.window)
-		self.scrollbar.pack(side = RIGHT, fill = Y)
+			self.crime_api = GetCrime()
+			self.location = Entry()
 
-		#Frame for window
-		self.crimeFrameUI = Frame(self.window)
-		self.crimeFrameUI.pack(fill = BOTH, expand = 1)
-		self.crimeFrameUI.configure(height = WINDOW_HEIGHT, width = WINDOW_WIDTH)
+			#Scrollbar
+			self.scrollbar = Scrollbar(self.window)
+			self.scrollbar.pack(side = RIGHT, fill = Y)
 
-		#Frame for map
-		self.mapFrame = ttk.Frame(self.crimeFrameUI)
-		self.mapFrame.grid_columnconfigure(0, weight=1)
-		self.mapFrame.grid(row = 1, column = 0, sticky = "news")
-		self.mapFrame.configure(height = MAP_HEIGHT, width = MAP_WIDTH)
+			#Frame for window
+			self.crimeFrameUI = Frame(self.window)
+			self.crimeFrameUI.pack(fill = BOTH, expand = 1)
+			self.crimeFrameUI.configure(height = WINDOW_HEIGHT, width = WINDOW_WIDTH)
 
-		# Map image
-		get_map(lat=self.my_loc["lat"], lng=self.my_loc["lng"],zoom=15,width=MAP_WIDTH,height=MAP_HEIGHT,format=MAP_EXTENSION)
-		mapImage = PhotoImage(file=MAP_FILENAME + "." + MAP_EXTENSION) #this variable needs to stay so the reference to the image stays alive
-		self.mapLabel = Label(self.mapFrame, image=mapImage)
-		self.mapLabel.pack()
+			#Frame for map
+			self.mapFrame = ttk.Frame(self.crimeFrameUI)
+			self.mapFrame.grid_columnconfigure(0, weight=1)
+			self.mapFrame.grid(row = 1, column = 0, sticky = "news")
+			self.mapFrame.configure(height = MAP_HEIGHT, width = MAP_WIDTH)
 
-		#Frame for buttons
-		self.buttonFrame = ttk.Frame(self.crimeFrameUI)
-		self.buttonFrame.grid_columnconfigure(0, weight = 1)
-		self.buttonFrame.grid(row = 0, column = 1, sticky = "news")
-		self.buttonFrame.configure(height = 50, width = 100)
-		self.location = Entry(self.buttonFrame, font = BUTTON_FONT)
-		self.location.insert(0, self.address)
+			# Map image
+			get_map(lat=self.my_loc["lat"], lng=self.my_loc["lng"],zoom=15,width=MAP_WIDTH,height=MAP_HEIGHT,format=MAP_EXTENSION)
+			mapImage = PhotoImage(file=MAP_FILENAME + "." + MAP_EXTENSION) #this variable needs to stay so the reference to the image stays alive
+			self.mapLabel = Label(self.mapFrame, image=mapImage)
+			self.mapLabel.pack()
 
-		self.locationBtn = Button(self.buttonFrame, command=self._refresh_map, text = "Location", fg = BUTTON_FOREGROUND, bg = BUTTON_BACKGROUND, width = 8, font = BUTTON_FONT)
+			#Frame for buttons
+			self.buttonFrame = ttk.Frame(self.crimeFrameUI)
+			self.buttonFrame.grid_columnconfigure(0, weight = 1)
+			self.buttonFrame.grid(row = 0, column = 1, sticky = "news")
+			self.buttonFrame.configure(height = 50, width = 100)
+			self.location = Entry(self.buttonFrame, font = BUTTON_FONT)
+			self.location.insert(0, self.address)
 
-		#Frame for reports
-		self._create_report_frame()
+			self.locationBtn = Button(self.buttonFrame, command=self._refresh_map, text = "Location", fg = BUTTON_FOREGROUND, bg = BUTTON_BACKGROUND, width = 8, font = BUTTON_FONT)
 
-		#Format for window
-		self.location.grid(row = 0, column = 0, pady = 5, padx = 5, ipady = 6, ipadx = 100)
-		self.locationBtn.grid(row = 0, column = 1, pady = 5, padx = 5, ipadx = 14, ipady = 4)
+			#Frame for reports
+			self._create_report_frame()
+
+			#Format for window
+			self.location.grid(row = 0, column = 0, pady = 5, padx = 5, ipady = 6, ipadx = 100)
+			self.locationBtn.grid(row = 0, column = 1, pady = 5, padx = 5, ipadx = 14, ipady = 4)
 
 	# Create report frame
 	# This gets run whenever we poll for new crime events, to prevent duplicate entries
 	def _create_report_frame(self):
-		self.reportFrame = ttk.Frame(self.crimeFrameUI)
-		self.reportFrame.grid_columnconfigure(1, weight=1)
-		self.reportFrame.grid(row = 1, column = 1, sticky = "news")
-		self.reportFrame.configure(height = 600, width = 110)
-		self.refreshBtn = Button(self.reportFrame, text = "Refresh Crime List", fg = BUTTON_FOREGROUND, bg = BUTTON_BACKGROUND, width = 8, command = self._crime_refresh, font = BUTTON_FONT)
-		self.refreshBtn.grid(row = 0, column = 2, pady = 5, ipadx = 14, ipady = 4, padx = 5)
+		if USE_TOGA:
+			pass
+		else:
+			self.reportFrame = ttk.Frame(self.crimeFrameUI)
+			self.reportFrame.grid_columnconfigure(1, weight=1)
+			self.reportFrame.grid(row = 1, column = 1, sticky = "news")
+			self.reportFrame.configure(height = 600, width = 110)
+			self.refreshBtn = Button(self.reportFrame, text = "Refresh Crime List", fg = BUTTON_FOREGROUND, bg = BUTTON_BACKGROUND, width = 8, command = self._crime_refresh, font = BUTTON_FONT)
+			self.refreshBtn.grid(row = 0, column = 2, pady = 5, ipadx = 14, ipady = 4, padx = 5)
 		
 	#GPS Update Callback
 	def _update_loc(self, **kwargs):
@@ -122,7 +135,6 @@ class CrimeUI(object):
 		self.crime_api.update_query(self.my_loc["lat"], self.my_loc["lng"], self.crime_radius, self.crime_days_filter)
 		all_crimes = self.crime_api.get_crimes()
 		self.update_crimes(all_crimes)
-
 
 	#Location Button callback to download a new map
 	def _refresh_map(self):
@@ -155,6 +167,23 @@ class CrimeUI(object):
 		else:
 			print("Passed in a null location!")
 
+	def _create_crime_frame(self, crime_report):
+		if USE_TOGA:
+			pass
+		else:
+			crime = Label(self.reportFrame, bg=BUTTON_BACKGROUND, fg=BUTTON_FOREGROUND, font = LABEL_FONT, relief = "groove", pady = 5)
+			crime.config(text = crime_report['type'] + " at " + crime_report['timestamp'] + ". Location: " + crime_report['location'])
+
+			crime.grid(row = self.crime_count, column = 0, ipady = 6, sticky = N+W+E+S, padx = 10, ipadx = 35)
+		self.crime_count += 1
+
+	def create_window(self):
+		self._refresh_map()
+		if USE_TOGA:
+			pass
+		else:
+			self.window.mainloop()
+
 	# Removes all crime data from the list and resets the crime count
 	def remove_crime_list(self):
 		self._create_report_frame()		
@@ -166,14 +195,6 @@ class CrimeUI(object):
 
 		# Re-create the frame holding all the crime reports
 		for crime_report in crimes_list:
-			crime = Label(self.reportFrame, bg=BUTTON_BACKGROUND, fg=BUTTON_FOREGROUND, font = LABEL_FONT, relief = "groove", pady = 5)
-			crime.config(text = crime_report['type'] + " at " + crime_report['timestamp'] + ". Location: " + crime_report['location'])
-
-			crime.grid(row = self.crime_count, column = 0, ipady = 6, sticky = N+W+E+S, padx = 10, ipadx = 35)
-			self.crime_count += 1
+			self._create_crime_frame(crime_report)
 
 		print("Found " + str(self.crime_count) + " crimes.")
-
-	def create_window(self):
-		self._refresh_map()
-		self.window.mainloop()
