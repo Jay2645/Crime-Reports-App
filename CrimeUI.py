@@ -28,7 +28,7 @@ BUTTON_BACKGROUND = "LightSteelBlue3"
 LABEL_FONT = ("verdana", 8)
 BUTTON_FONT = ("verdana", 10, "bold")
 
-USE_TOGA = False
+USE_TOGA = True
 
 class TkinterUI(object):
 	def __init__(self, address, refresh_crime_delegate, map_refresh_delegate):
@@ -115,19 +115,64 @@ class TkinterUI(object):
 	def create_window(self):
 		self.window.mainloop()
 
-class TogaUI(toga.App):
-	def startup(self):
-		pass
+def locationbutton_handler(widget):
+    print("Location Button has been selected")
+
+def refreshbutton_handler(widget):
+    print("Refresh Button has been selected")
+
+def build(app):
+    box = toga.Box()
+
+	#make children boxes for different sections of layout
+    box_a = toga.Box('box_a')
+    box_b = toga.Box('box_b')
+
+    #box = toga.Box('box', children=[box_a, box_b])
+
+	#Scrollbar stuff
+    #content = toga.WebView()
+
+    #container = toga.ScrollContainer(content=content, horizontal=True)
+
+    #container.vertical = True
+
+    locationBut = toga.Button('Location', on_press=locationbutton_handler)
+    refreshBut = toga.Button('Refresh Crime List', on_press=refreshbutton_handler)
+    locationInput = toga.TextInput()
+
+    locationBut.style.padding = (0, 0, 50, 50)
+    locationBut.style.flex = 0
+    refreshBut.style.padding = (0, 0, 100, 100)
+    refreshBut.style.flex = 0
+
+    locationInput.style.update(flex=1, padding_bottom=0)
+
+    box_b.add(locationBut)
+    box_b.add(refreshBut)
+    box_b.add(locationInput)
+
+    split = toga.SplitContainer()
+
+    split.content = [box_a, box_b]
+
+    return split
+
+class TogaUI(object):
+	def __init__(self, address, refresh_crime_delegate, map_refresh_delegate):
+		self.window = toga.App('Crime Busters', 'dummy', startup=build)
 
 	# Create report frame
 	# This gets run whenever we poll for new crime events, to prevent duplicate entries
 	def create_report_frame(self, refresh_crime_delegate):
+		#self.refreshBut.on_press = refresh_crime_delegate
 		pass
 
 	def create_crime_frame(self, crime_report):
 		pass
 
 	def create_map_frame(self, map_refresh_delegate):
+		#self.locationBut.on_press = map_refresh_delegate
 		pass
 
 	def create_map_image(self, new_loc):
@@ -145,7 +190,7 @@ class TogaUI(toga.App):
 		return ""
 
 	def create_window(self):
-		self.main_loop()
+		self.window.main_loop()
 
 
 class CrimeUI(object):
@@ -181,9 +226,7 @@ class CrimeUI(object):
 	def _create_frames(self):
 		get_map(lat=self.my_loc["lat"], lng=self.my_loc["lng"],zoom=15,width=MAP_WIDTH,height=MAP_HEIGHT,format=MAP_EXTENSION)
 		if USE_TOGA:
-			self.window = TogaUI("Crime Busters", "org.crimebusters.crimebusters")
-			self.window.create_report_frame(self._crime_refresh)
-			self.window.create_map_frame(self._refresh_map)
+			self.window = TogaUI(self.address, self._crime_refresh, self._refresh_map)
 		else:
 			self.window = TkinterUI(self.address, self._crime_refresh, self._refresh_map)
 		
