@@ -122,6 +122,7 @@ class TogaUI(toga.App):
 		self.refresh_map_delegate = refresh_map_delegate
 		self.address = address
 		self.locationInput = None
+		self.crimeTable = None
 		self.my_loc = {'lat':CSUF_LAT,'lng':CSUF_LNG}
 		self.box_a = None
 
@@ -130,8 +131,8 @@ class TogaUI(toga.App):
 
 		#make children boxes for different sections of layout
 		self.box_a = toga.Box('box_a')
-		#self.box_a.style.update(alignment=CENTER)
-		#self.box_a.style.update(flex=1)
+		self.box_a.style.update(alignment=CENTER)
+		self.box_a.style.update(flex=1)
 		box_b = toga.Box('box_b')
 		box_b.style.direction='column'
 
@@ -147,6 +148,11 @@ class TogaUI(toga.App):
 		self.locationBut = toga.Button('Location', on_press=self.refresh_map_delegate)
 		self.refreshBut = toga.Button('Refresh Crime List', on_press=self.refresh_crime_delegate)
 		self.locationInput = toga.TextInput(placeholder = self.address)
+		headings = ['Type', 'Timestamp', 'Location']
+		self.crimeTable = toga.Table(
+			headings=headings,
+            style=Pack(flex=1)
+		)
 
 		#self.locationBut.style.padding = (0, 0, 50, 50)
 		#self.locationBut.style.flex = 0
@@ -167,23 +173,30 @@ class TogaUI(toga.App):
 		box_b.add(self.locationInput)
 		box_b.add(self.locationBut)
 		box_b.add(self.refreshBut)
+		box_b.add(self.crimeTable)
 
 		self.box = toga.Box('main_box')
 		self.box.add(self.box_a)
 		self.box.add(box_b)
-		#self.refresh_map_delegate()
+		
+		self.refresh_map_delegate()
 
 		return self.box
 
 	# Create report frame
 	# This gets run whenever we poll for new crime events, to prevent duplicate entries
 	def create_report_frame(self, refresh_crime_delegate):
-		pass
+		if self.crimeTable == None:
+			return
+		self.crimeTable.data.clear()
 
 	# This adds a new entry to the crime list
 	# crime_report is a JSON object with the crime data
 	def create_crime_frame(self, crime_report):
-		pass
+		if self.crimeTable == None:
+			return
+		crime_data = (crime_report['type'], crime_report['timestamp'], crime_report['location'])
+		self.crimeTable.data.insert(len(self.crimeTable.data), *crime_data)
 
 	def create_map_image(self, my_loc):
 		if self.box_a is None:
@@ -197,7 +210,6 @@ class TogaUI(toga.App):
 				self.map_image = toga.Image(image_path)
 				self.map_view.image = self.map_image
 				print("Updating image at " + str(my_loc) + " using image at " + image_path)
-				self.main_window.refresh()
 			else:
 				print("Could not load map for " + self.get_current_address())
 		else:
