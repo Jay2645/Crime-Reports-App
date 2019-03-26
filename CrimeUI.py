@@ -1,7 +1,6 @@
 # Import UI elements
 from tkinter import *
 from tkinter import ttk
-import os.path
 import toga
 from toga.style.pack import *
 
@@ -128,11 +127,12 @@ class TogaUI(object):
 		self.window = toga.App('Crime Busters', 'dummy', startup=self.build)
 
 	def build(self, app):
-		box = toga.Box()
+		#box = toga.Box()
 
 		#make children boxes for different sections of layout
-		self.map_image = None
-		self.box_a = toga.ImageView(id='box_a',image=self.map_image)
+		self.box_a = toga.Box('box_a')
+		self.box_a.style.update(alignment=CENTER)
+		self.box_a.style.update(flex=1)
 		box_b = toga.Box('box_b')
 		box_b.style.direction='column'
 
@@ -153,6 +153,12 @@ class TogaUI(object):
 		#self.locationBut.style.flex = 0
 		#self.refreshBut.style.padding = (0, 0, 100, 100)
 		#self.refreshBut.style.flex = 0
+		
+		self.map_image = None
+		self.map_view = toga.ImageView(id='mapView', image=self.map_image)
+		self.map_view.style.update(width=MAP_WIDTH)
+		self.map_view.style.update(height=MAP_HEIGHT)
+		self.box_a.add(self.map_view)
 
 		self.locationInput.style.update(flex=1, padding_bottom=0)
 		box_b.add(self.locationInput)
@@ -185,9 +191,8 @@ class TogaUI(object):
 
 		if self.my_loc is not None:
 			if get_map(self.my_loc["lat"], self.my_loc["lng"], zoom=15, width=MAP_WIDTH, height=MAP_HEIGHT, format=MAP_EXTENSION):
-				map_image_string = os.path.join(os.path.dirname(os.path.abspath(__file__)), MAP_FILENAME + "." + MAP_EXTENSION)
-				print("Creating an image at: " + str(self.my_loc) + ", using the file at " + map_image_string)
-				self.map_image = toga.Image(map_image_string)
+				self.map_image = toga.Image("../" + MAP_FILENAME + "." + MAP_EXTENSION)
+				self.map_view.refresh()
 				self.box_a.refresh()
 			else:
 				print("Could not load map for " + self.get_current_address())
