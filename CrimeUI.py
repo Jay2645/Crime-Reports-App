@@ -1,8 +1,6 @@
-# Import UI elements
-from tkinter import *
-from tkinter import ttk
-import toga
-from toga.style.pack import *
+# Import Kivy stuff
+from kivy.app import App
+from kivy.loader import Loader
 
 # Import GPS stuff
 from plyer import gps
@@ -28,183 +26,7 @@ BUTTON_BACKGROUND = "LightSteelBlue3"
 LABEL_FONT = ("verdana", 8)
 BUTTON_FONT = ("verdana", 10, "bold")
 
-USE_TOGA = True
-
-class TkinterUI(object):
-	def __init__(self, address, refresh_crime_delegate, map_refresh_delegate):
-		self.window = Tk()
-		#Configuration for window GUI
-		self.window.title("Crime Busters")
-		self.window.geometry(str(WINDOW_WIDTH) + "x" + str(WINDOW_HEIGHT))
-		self.window.configure(bg = "ivory3")
-
-		self.location = Entry()
-
-		#Scrollbar
-		self.scrollbar = Scrollbar(self.window)
-		self.scrollbar.pack(side = RIGHT, fill = Y)
-
-		#Frame for window
-		self.crimeFrameUI = Frame(self.window)
-		self.crimeFrameUI.pack(fill = BOTH, expand = 1)
-		self.crimeFrameUI.configure(height = WINDOW_HEIGHT, width = WINDOW_WIDTH)
-
-		#Frame for map
-		self.mapFrame = ttk.Frame(self.crimeFrameUI)
-		self.mapFrame.grid_columnconfigure(0, weight=1)
-		self.mapFrame.grid(row = 1, column = 0, sticky = "news")
-		self.mapFrame.configure(height = MAP_HEIGHT, width = MAP_WIDTH)
-
-		# Map image
-		mapImage = PhotoImage(file=MAP_FILENAME + "." + MAP_EXTENSION) #this variable needs to stay so the reference to the image stays alive
-		self.mapLabel = Label(self.mapFrame, image=mapImage)
-		self.mapLabel.pack()
-
-		#Frame for buttons
-		self.buttonFrame = ttk.Frame(self.crimeFrameUI)
-		self.buttonFrame.grid_columnconfigure(0, weight = 1)
-		self.buttonFrame.grid(row = 0, column = 1, sticky = "news")
-		self.buttonFrame.configure(height = 50, width = 100)
-		self.location = Entry(self.buttonFrame, font = BUTTON_FONT)
-		self.location.insert(0, address)
-
-		self.locationBtn = Button(self.buttonFrame, command=map_refresh_delegate, text = "Location", fg = BUTTON_FOREGROUND, bg = BUTTON_BACKGROUND, width = 8, font = BUTTON_FONT)
-
-		#Frame for reports
-		self.create_report_frame(refresh_crime_delegate)
-
-		#Format for window
-		self.location.grid(row = 0, column = 0, pady = 5, padx = 5, ipady = 6, ipadx = 100)
-		self.locationBtn.grid(row = 0, column = 1, pady = 5, padx = 5, ipadx = 14, ipady = 4)
-
-	# Create report frame
-	# This gets run whenever we poll for new crime events, to prevent duplicate entries
-	def create_report_frame(self, refresh_crime_delegate):
-		self.reportFrame = ttk.Frame(self.crimeFrameUI)
-		self.reportFrame.grid_columnconfigure(1, weight=1)
-		self.reportFrame.grid(row = 1, column = 1, sticky = "news")
-		self.reportFrame.configure(height = 600, width = 110)
-		self.refreshBtn = Button(self.reportFrame, text = "Refresh Crime List", fg = BUTTON_FOREGROUND, bg = BUTTON_BACKGROUND, width = 8, command = refresh_crime_delegate, font = BUTTON_FONT)
-		self.refreshBtn.grid(row = 0, column = 2, pady = 5, ipadx = 14, ipady = 4, padx = 5)
-		self.crime_count = 0
-
-	def create_crime_frame(self, crime_report):
-		crime = Label(self.reportFrame, bg=BUTTON_BACKGROUND, fg=BUTTON_FOREGROUND, font = LABEL_FONT, relief = "groove", pady = 5)
-		crime.config(text = crime_report['type'] + " at " + crime_report['timestamp'] + ". Location: " + crime_report['location'])
-
-		crime.grid(row = self.crime_count, column = 0, ipady = 6, sticky = N+W+E+S, padx = 10, ipadx = 35)
-		self.crime_count += 1
-
-	def create_map_image(self, new_loc):
-		if new_loc is not None:
-			print("Creating an image at: " + str(new_loc))
-			self.my_loc = new_loc
-			if get_map(self.my_loc["lat"], self.my_loc["lng"], zoom=15, width=MAP_WIDTH, height=MAP_HEIGHT, format=MAP_EXTENSION):
-				mapImage = PhotoImage(file=MAP_FILENAME + "." + MAP_EXTENSION)
-				self.mapLabel.configure(image=mapImage)
-				self.mapLabel.image = mapImage
-				self.mapLabel.pack()
-			else:
-				print("Could not load map for " + self.get_current_address())
-		else:
-			print("Passed in a null location!")
-
-	def get_current_address(self):
-		return self.location.get()
-
-	def create_window(self):
-		self.window.mainloop()
-
-class TogaUI(toga.App):
-	def __init__(self, address, refresh_crime_delegate, refresh_map_delegate):
-		super().__init__('Crime Busters', 'dummy', startup=self.build)
-		self.refresh_crime_delegate = refresh_crime_delegate
-		self.refresh_map_delegate = refresh_map_delegate
-		self.address = address
-		self.locationInput = None
-		self.crimeTable = None
-		self.my_loc = {'lat':CSUF_LAT,'lng':CSUF_LNG}
-		self.box_a = None
-
-	def build(self, app):
-		#box = toga.Box()
-
-		#make children boxes for different sections of layout
-		self.box_a = toga.Box('box_a')
-		self.box_a.style.update(alignment=CENTER)
-		self.box_a.style.update(flex=1)
-		box_b = toga.Box('box_b')
-		box_b.style.direction='column'
-
-		#box = toga.Box('box', children=[box_a, box_b])
-
-		#Scrollbar stuff
-		#content = toga.WebView()
-
-		#container = toga.ScrollContainer(content=content, horizontal=True)
-
-		#container.vertical = True
-
-		self.locationBut = toga.Button('Location', on_press=self.refresh_map_delegate)
-		self.refreshBut = toga.Button('Refresh Crime List', on_press=self.refresh_crime_delegate)
-		self.locationInput = toga.TextInput(placeholder = self.address)
-		headings = ['Type', 'Timestamp', 'Location']
-		self.crimeTable = toga.Table(
-			headings=headings,
-            style=Pack(flex=1)
-		)
-
-		#self.locationBut.style.padding = (0, 0, 50, 50)
-		#self.locationBut.style.flex = 0
-		#self.refreshBut.style.padding = (0, 0, 100, 100)
-		#self.refreshBut.style.flex = 0
-		
-		if get_map(self.my_loc["lat"], self.my_loc["lng"], zoom=15, width=MAP_WIDTH, height=MAP_HEIGHT, format=MAP_EXTENSION):
-			self.map_image = toga.Image("../" + MAP_FILENAME + "." + MAP_EXTENSION)
-		else: self.map_image = None
-		self.map_view = toga.ImageView(id='mapView', image=self.map_image)
-		self.map_view.style.update(width=MAP_WIDTH)
-		self.map_view.style.update(height=MAP_HEIGHT)
-		self.box_a.add(self.map_view)
-		self.box_a.style.update(width=MAP_WIDTH)
-		self.box_a.style.update(height=MAP_HEIGHT)
-
-		#self.locationInput.style.update(flex=1, padding_bottom=0)
-		box_b.add(self.locationInput)
-		box_b.add(self.locationBut)
-		box_b.add(self.refreshBut)
-		box_b.add(self.crimeTable)
-
-		self.box = toga.Box('main_box')
-		self.box.add(self.box_a)
-		self.box.add(box_b)
-		
-		self.refresh_map_delegate()
-
-		return self.box
-
-	# Create report frame
-	# This gets run whenever we poll for new crime events, to prevent duplicate entries
-	def create_report_frame(self, refresh_crime_delegate):
-		if self.crimeTable == None:
-			return
-		self.crimeTable.data.clear()
-
-	# This adds a new entry to the crime list
-	# crime_report is a JSON object with the crime data
-	def create_crime_frame(self, crime_report):
-		if self.crimeTable == None:
-			return
-		crime_data = (crime_report['type'], crime_report['timestamp'], crime_report['location'])
-		self.crimeTable.data.insert(len(self.crimeTable.data), *crime_data)
-
-	def create_map_image(self, my_loc):
-		if self.box_a is None:
-			# No UI made yet
-			print("Skipping map refresh since the UI has not been created.")
-			return
-
-		if my_loc is not None:
+'''		if my_loc is not None:
 			if get_map(my_loc["lat"], my_loc["lng"], zoom=15, width=MAP_WIDTH, height=MAP_HEIGHT, format=MAP_EXTENSION):
 				image_path = "../" + MAP_FILENAME + "." + MAP_EXTENSION
 				self.map_image = toga.Image(image_path)
@@ -214,19 +36,12 @@ class TogaUI(toga.App):
 				print("Could not load map for " + self.get_current_address())
 		else:
 			print("Cannot generate a map for no location!")
-	
-	def get_current_address(self):
-		if self.locationInput == None:
-			return self.address
-		else:
-			return self.locationInput.value
-
-	def create_window(self):
-		self.main_loop()
+'''
 
 
-class CrimeUI(object):
+class CrimeUI(App):
 	def __init__(self, address = "", radius = 10, in_days = 2):
+		super().__init__()
 		self.address = address
 		self.crime_radius = radius
 		self.crime_days_filter = in_days
@@ -252,17 +67,10 @@ class CrimeUI(object):
 				self.my_loc["lat"]= CSUF_LAT
 				self.my_loc["lng"]= CSUF_LNG
 				print("Not using GPS, default location set to " + str(self.my_loc))
-		
-		self._create_frames()
 
-	def _create_frames(self):
-		#get_map(lat=self.my_loc["lat"], lng=self.my_loc["lng"],zoom=15,width=MAP_WIDTH,height=MAP_HEIGHT,format=MAP_EXTENSION)
-		#^this gets called in TogaUI.build
-		if USE_TOGA:
-			self.window = TogaUI(self.address, self._crime_refresh, self._refresh_map)
-		else:
-			self.window = TkinterUI(self.address, self._crime_refresh, self._refresh_map)
-		
+	def build(self):
+		pass
+	
 	#GPS Update Callback
 	def _update_loc(self, **kwargs):
 		if not self.use_gps:
