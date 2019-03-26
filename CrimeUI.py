@@ -129,8 +129,8 @@ class TogaUI(object):
 
 		#make children boxes for different sections of layout
 		self.box_a = toga.Box('box_a')
-		self.box_a.style.update(alignment=CENTER)
-		self.box_a.style.update(flex=1)
+		#self.box_a.style.update(alignment=CENTER)
+		#self.box_a.style.update(flex=1)
 		box_b = toga.Box('box_b')
 		box_b.style.direction='column'
 
@@ -152,22 +152,28 @@ class TogaUI(object):
 		#self.refreshBut.style.padding = (0, 0, 100, 100)
 		#self.refreshBut.style.flex = 0
 		
-		self.map_image = None
+		if get_map(self.my_loc["lat"], self.my_loc["lng"], zoom=15, width=MAP_WIDTH, height=MAP_HEIGHT, format=MAP_EXTENSION):
+			self.map_image = toga.Image("../" + MAP_FILENAME + "." + MAP_EXTENSION)
+		else: self.map_image = None
 		self.map_view = toga.ImageView(id='mapView', image=self.map_image)
 		self.map_view.style.update(width=MAP_WIDTH)
 		self.map_view.style.update(height=MAP_HEIGHT)
 		self.box_a.add(self.map_view)
+		self.box_a.style.update(width=MAP_WIDTH)
+		self.box_a.style.update(height=MAP_HEIGHT)
 
-		self.locationInput.style.update(flex=1, padding_bottom=0)
+		#self.locationInput.style.update(flex=1, padding_bottom=0)
 		box_b.add(self.locationInput)
 		box_b.add(self.locationBut)
 		box_b.add(self.refreshBut)
 
-		self.split = toga.SplitContainer()
-
-		self.split.content = [self.box_a, box_b]
-
-		return self.split
+		self.box = toga.Box('main_box')
+		self.box.add(self.box_a)
+		self.box.add(box_b)
+		return self.box
+		#self.split = toga.SplitContainer(direction=toga.SplitContainer.VERTICAL)
+		#self.split.content = [self.box_a, box_b]
+		#return self.split
 
 	# Create report frame
 	# This gets run whenever we poll for new crime events, to prevent duplicate entries
