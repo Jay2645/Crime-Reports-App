@@ -117,11 +117,13 @@ class TkinterUI(object):
 		self.window.mainloop()
 
 class TogaUI(object):
-	def __init__(self, address, refresh_crime_delegate):
+	def __init__(self, address, refresh_crime_delegate, refresh_map_delegate):
 		self.refresh_crime_delegate = refresh_crime_delegate
+		self.refresh_map_delegate = refresh_map_delegate
 		self.address = address
 		self.locationInput = None
 		self.my_loc = {'lat':CSUF_LAT,'lng':CSUF_LNG}
+		self.box_a = None
 
 		self.window = toga.App('Crime Busters', 'dummy', startup=self.build)
 
@@ -143,7 +145,7 @@ class TogaUI(object):
 
 		#container.vertical = True
 
-		self.locationBut = toga.Button('Location', on_press=self.map_refresh)
+		self.locationBut = toga.Button('Location', on_press=self.refresh_map_delegate)
 		self.refreshBut = toga.Button('Refresh Crime List', on_press=self.refresh_crime_delegate)
 		self.locationInput = toga.TextInput(placeholder = self.address)
 
@@ -161,6 +163,8 @@ class TogaUI(object):
 
 		self.split.content = [self.box_a, box_b]
 
+		self.refresh_map_delegate()
+
 		return self.split
 
 	# Create report frame
@@ -173,13 +177,17 @@ class TogaUI(object):
 	def create_crime_frame(self, crime_report):
 		pass
 
-	def map_refresh(self, widget):
-		if len(self.locationInput.value)>0:
-			self.my_loc = get_lat_lng(self.locationInput.value)
+	def create_map_image(self, my_loc):
+		if self.box_a is None:
+			# No UI made yet
+			print("Skipping map refresh since the UI has not been created.")
+			return
+
 		if self.my_loc is not None:
-			print("Creating an image at: " + str(self.my_loc))
 			if get_map(self.my_loc["lat"], self.my_loc["lng"], zoom=15, width=MAP_WIDTH, height=MAP_HEIGHT, format=MAP_EXTENSION):
-				self.map_image = toga.Image(os.path.join(os.path.dirname(os.path.abspath(__file__)), MAP_FILENAME + "." + MAP_EXTENSION))
+				map_image_string = os.path.join(os.path.dirname(os.path.abspath(__file__)), MAP_FILENAME + "." + MAP_EXTENSION)
+				print("Creating an image at: " + str(self.my_loc) + ", using the file at " + map_image_string)
+				self.map_image = toga.Image(map_image_string)
 				self.box_a.refresh()
 			else:
 				print("Could not load map for " + self.get_current_address())
