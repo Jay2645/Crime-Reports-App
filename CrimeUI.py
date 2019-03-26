@@ -115,52 +115,48 @@ class TkinterUI(object):
 	def create_window(self):
 		self.window.mainloop()
 
-def locationbutton_handler(widget):
-    print("Location Button has been selected")
-
-def refreshbutton_handler(widget):
-    print("Refresh Button has been selected")
-
-def build(app):
-    box = toga.Box()
-
-	#make children boxes for different sections of layout
-    box_a = toga.Box('box_a')
-    box_b = toga.Box('box_b')
-
-    #box = toga.Box('box', children=[box_a, box_b])
-
-	#Scrollbar stuff
-    #content = toga.WebView()
-
-    #container = toga.ScrollContainer(content=content, horizontal=True)
-
-    #container.vertical = True
-
-    locationBut = toga.Button('Location', on_press=locationbutton_handler)
-    refreshBut = toga.Button('Refresh Crime List', on_press=refreshbutton_handler)
-    locationInput = toga.TextInput()
-
-    locationBut.style.padding = (0, 0, 50, 50)
-    locationBut.style.flex = 0
-    refreshBut.style.padding = (0, 0, 100, 100)
-    refreshBut.style.flex = 0
-
-    locationInput.style.update(flex=1, padding_bottom=0)
-
-    box_b.add(locationBut)
-    box_b.add(refreshBut)
-    box_b.add(locationInput)
-
-    split = toga.SplitContainer()
-
-    split.content = [box_a, box_b]
-
-    return split
-
 class TogaUI(object):
 	def __init__(self, address, refresh_crime_delegate, map_refresh_delegate):
-		self.window = toga.App('Crime Busters', 'dummy', startup=build)
+		self.refresh_crime_delegate = refresh_crime_delegate
+		self.map_refresh_delegate = map_refresh_delegate
+		self.window = toga.App('Crime Busters', 'dummy', startup=self.build)
+
+	def build(self, app):
+		box = toga.Box()
+
+		#make children boxes for different sections of layout
+		box_a = toga.Box('box_a')
+		box_b = toga.Box('box_b')
+
+		#box = toga.Box('box', children=[box_a, box_b])
+
+		#Scrollbar stuff
+		#content = toga.WebView()
+
+		#container = toga.ScrollContainer(content=content, horizontal=True)
+
+		#container.vertical = True
+
+		self.locationBut = toga.Button('Location', on_press=self.map_refresh_delegate)
+		self.refreshBut = toga.Button('Refresh Crime List', on_press=self.refresh_crime_delegate)
+		self.locationInput = toga.TextInput()
+
+		self.locationBut.style.padding = (0, 0, 50, 50)
+		self.locationBut.style.flex = 0
+		self.refreshBut.style.padding = (0, 0, 100, 100)
+		self.refreshBut.style.flex = 0
+
+		self.locationInput.style.update(flex=1, padding_bottom=0)
+
+		box_b.add(self.locationBut)
+		box_b.add(self.refreshBut)
+		box_b.add(self.locationInput)
+
+		split = toga.SplitContainer()
+
+		split.content = [box_a, box_b]
+
+		return split
 
 	# Create report frame
 	# This gets run whenever we poll for new crime events, to prevent duplicate entries
@@ -238,13 +234,13 @@ class CrimeUI(object):
 			self._create_map_image({"lat":kwargs["lat"],"lng":kwargs["lng"]})
 
 	#Crime Refresher Function
-	def _crime_refresh(self):
+	def _crime_refresh(self, source_button = None):
 		self.crime_api.update_query(self.my_loc["lat"], self.my_loc["lng"], self.crime_radius, self.crime_days_filter)
 		all_crimes = self.crime_api.get_crimes()
 		self.update_crimes(all_crimes)
 
 	#Location Button callback to download a new map
-	def _refresh_map(self):
+	def _refresh_map(self, source_button = None):
 		print("Refreshing map!")
 		try:
 			self.address = self.window.get_current_address()
