@@ -105,7 +105,7 @@ class TkinterUI(object):
 				self.mapLabel.image = mapImage
 				self.mapLabel.pack()
 			else:
-				print("Could not load map for " + self.location.get())
+				print("Could not load map for " + self.get_current_address())
 		else:
 			print("Passed in a null location!")
 
@@ -119,6 +119,9 @@ class TogaUI(object):
 	def __init__(self, address, refresh_crime_delegate, map_refresh_delegate):
 		self.refresh_crime_delegate = refresh_crime_delegate
 		self.map_refresh_delegate = map_refresh_delegate
+		self.address = address
+		self.locationInput = None
+
 		self.window = toga.App('Crime Busters', 'dummy', startup=self.build)
 
 	def build(self, app):
@@ -139,7 +142,7 @@ class TogaUI(object):
 
 		self.locationBut = toga.Button('Location', on_press=self.map_refresh_delegate)
 		self.refreshBut = toga.Button('Refresh Crime List', on_press=self.refresh_crime_delegate)
-		self.locationInput = toga.TextInput()
+		self.locationInput = toga.TextInput(placeholder = self.address)
 
 		self.locationBut.style.padding = (0, 0, 50, 50)
 		self.locationBut.style.flex = 0
@@ -161,14 +164,11 @@ class TogaUI(object):
 	# Create report frame
 	# This gets run whenever we poll for new crime events, to prevent duplicate entries
 	def create_report_frame(self, refresh_crime_delegate):
-		#self.refreshBut.on_press = refresh_crime_delegate
 		pass
 
+	# This adds a new entry to the crime list
+	# crime_report is a JSON object with the crime data
 	def create_crime_frame(self, crime_report):
-		pass
-
-	def create_map_frame(self, map_refresh_delegate):
-		#self.locationBut.on_press = map_refresh_delegate
 		pass
 
 	def create_map_image(self, new_loc):
@@ -176,14 +176,20 @@ class TogaUI(object):
 			print("Creating an image at: " + str(new_loc))
 			self.my_loc = new_loc
 			if get_map(self.my_loc["lat"], self.my_loc["lng"], zoom=15, width=MAP_WIDTH, height=MAP_HEIGHT, format=MAP_EXTENSION):
+				# TODO: Take the map image that gets created here and display it in Toga
+				# https://toga.readthedocs.io/en/latest/reference/api/widgets/imageview.html
 				pass
 			else:
-				print("Could not load map for " + self.location.get())
+				print("Could not load map for " + self.get_current_address())
 		else:
 			print("Passed in a null location!")
 
+
 	def get_current_address(self):
-		return ""
+		if self.locationInput == None:
+			return self.address
+		else:
+			return self.locationInput.value
 
 	def create_window(self):
 		self.window.main_loop()
