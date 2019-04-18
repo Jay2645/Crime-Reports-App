@@ -1,5 +1,7 @@
 # Import Kivy stuff
 from kivy.app import App
+from kivy.uix.button import Button
+from kivy.uix.widget import Widget
 from kivy.loader import Loader
 
 # Import GPS stuff
@@ -8,6 +10,8 @@ from plyer import gps
 # Import APIs
 from CrimeAPI import GetCrime
 from googlemap_utils import get_map, get_lat_lng
+
+import os
 
 CSUF_LAT = 33.8813416
 CSUF_LNG = -117.8866257
@@ -38,8 +42,11 @@ BUTTON_FONT = ("verdana", 10, "bold")
 			print("Cannot generate a map for no location!")
 '''
 
+class CrimeApp(App):
+	def build(self):
+		return CrimeUI('800 N State College Blvd, Fullerton, CA 92831', 10, 2)
 
-class CrimeUI(App):
+class CrimeUI(Widget):
 	def __init__(self, address = "", radius = 10, in_days = 2):
 		super().__init__()
 		self.address = address
@@ -50,6 +57,7 @@ class CrimeUI(App):
 		self.crime_api = GetCrime()
 
 		# GPS functionality if applicable - mobile only (should support both iPhone and android)
+		print("TEST TEST TEST")
 		try:
 			gps.configure(on_location=self._update_loc) # Configs gps object to use update_loc function as a callback
 			gps.start(minTime=10000, minDistance=1) # Poll every 10 seconds
@@ -67,9 +75,6 @@ class CrimeUI(App):
 				self.my_loc["lat"]= CSUF_LAT
 				self.my_loc["lng"]= CSUF_LNG
 				print("Not using GPS, default location set to " + str(self.my_loc))
-
-	def build(self):
-		pass
 	
 	#GPS Update Callback
 	def _update_loc(self, **kwargs):
@@ -100,14 +105,6 @@ class CrimeUI(App):
 
 		self.window.create_map_image(new_loc)
 		self._crime_refresh()
-
-	def _create_crime_frame(self, crime_report):
-		self.window.create_crime_frame(crime_report)
-		self.crime_count += 1
-
-	def create_window(self):
-		self._refresh_map()
-		self.window.create_window()
 
 	# Removes all crime data from the list and resets the crime count
 	def remove_crime_list(self):
