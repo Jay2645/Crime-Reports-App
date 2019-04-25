@@ -115,11 +115,10 @@ class CrimeUI(FloatLayout):
 		self.crime_api.update_query(self.coordinates["lat"], self.coordinates["lng"], self.radius, self.in_days)
 		all_crimes = self.crime_api.get_crimes()
 		#Delete the old crimes in the GUI
-		for child in self.ids.crime_box.children:
-			self.ids.crime_box.remove_widget(child)
+		self.ids.crime_box.clear_widgets()
 		#Update the GUI list of crimes
 		for crime in all_crimes:
-			crime_button = Button(text=crime["timestamp"] + ":" + crime["type"] + " at " + crime["location"], font_size=10, size_hint=(1,.15));
+			crime_button = Button(text=crime["timestamp"] + ":" + crime["type"] + " at " + crime["location"], font_size='12dp', size_hint=(1,self.height/len(all_crimes)));
 			self.ids.crime_box.add_widget(crime_button)
 
 	# Download a new map image - might be called by the gps or by the user typing in an address
