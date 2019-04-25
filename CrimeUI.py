@@ -1,7 +1,8 @@
 # Import Kivy stuff
 from kivy.app import App
-from kivy.uix.button import Button
+from kivy.uix.button import *
 from kivy.uix.widget import Widget
+from kivy.uix.floatlayout import FloatLayout
 from kivy.loader import Loader
 
 # Import GPS stuff
@@ -11,7 +12,7 @@ from plyer import gps
 from CrimeAPI import GetCrime
 from googlemap_utils import get_map, get_lat_lng
 
-import os
+#import os
 
 CSUF_LAT = 33.8813416
 CSUF_LNG = -117.8866257
@@ -42,81 +43,86 @@ BUTTON_FONT = ("verdana", 10, "bold")
 			print("Cannot generate a map for no location!")
 '''
 
-class CrimeApp(App):
-	def build(self):
-		return CrimeUI('800 N State College Blvd, Fullerton, CA 92831', 10, 2)
+class grid(Widget):
+    pass
+
+
+class crimeApp(App):
+    def build(self):
+        #return CrimeUI('800 N State College Blvd, Fullerton, CA 92831', 10, 2)
+        return FloatLayout()
 
 class CrimeUI(Widget):
-	def __init__(self, address = "", radius = 10, in_days = 2):
-		super().__init__()
-		self.address = address
-		self.crime_radius = radius
-		self.crime_days_filter = in_days
-		self.crime_count = 0
-		
-		self.crime_api = GetCrime()
+    def __init__(self, address="", radius=10, in_days=2):
+        super().__init__()
+        self.address = address
+        self.crime_radius = radius
+        self.crime_days_filter = in_days
+        self.crime_count = 0
 
-		# GPS functionality if applicable - mobile only (should support both iPhone and android)
-		print("TEST TEST TEST")
-		try:
-			gps.configure(on_location=self._update_loc) # Configs gps object to use update_loc function as a callback
-			gps.start(minTime=10000, minDistance=1) # Poll every 10 seconds
-			self.use_gps = True
-		except:
-			self.use_gps = False
-			print("No GPS configured, disabling GPS queries")
+        self.crime_api = GetCrime()
 
-		# Get latitude and longitude of passed-in address
-		self.my_loc = get_lat_lng(self.address)
-		if self.my_loc == None:
-			self.my_loc = {}
-			if not self.use_gps:
-				# If no GPS, default location to CSUF
-				self.my_loc["lat"]= CSUF_LAT
-				self.my_loc["lng"]= CSUF_LNG
-				print("Not using GPS, default location set to " + str(self.my_loc))
-	
-	#GPS Update Callback
-	def _update_loc(self, **kwargs):
-		if not self.use_gps:
-			return
-		if kwargs["lat"] is not None and kwargs["lng"] is not None:
-			self._create_map_image({"lat":kwargs["lat"],"lng":kwargs["lng"]})
+        # GPS functionality if applicable - mobile only (should support both iPhone and android)
+        print("TEST TEST TEST")
+        try:
+            gps.configure(on_location=self._update_loc)  # Configs gps object to use update_loc function as a callback
+            gps.start(minTime=10000, minDistance=1)  # Poll every 10 seconds
+            self.use_gps = True
+        except:
+            self.use_gps = False
+            print("No GPS configured, disabling GPS queries")
 
-	#Crime Refresher Function
-	def _crime_refresh(self, source_button = None):
-		self.crime_api.update_query(self.my_loc["lat"], self.my_loc["lng"], self.crime_radius, self.crime_days_filter)
-		all_crimes = self.crime_api.get_crimes()
-		self.update_crimes(all_crimes)
+        # Get latitude and longitude of passed-in address
+        self.my_loc = get_lat_lng(self.address)
+        if self.my_loc == None:
+            self.my_loc = {}
+            if not self.use_gps:
+                # If no GPS, default location to CSUF
+                self.my_loc["lat"] = CSUF_LAT
+                self.my_loc["lng"] = CSUF_LNG
+                print("Not using GPS, default location set to " + str(self.my_loc))
 
-	#Location Button callback to download a new map
-	def _refresh_map(self, source_button = None):
-		print("Refreshing map!")
-		try:
-			self.address = self.window.get_current_address()
-		except NameError:
-			# Use cached location
-			pass
-			
-		if self.address == "":
-			new_loc = self.my_loc
-		else:
-			new_loc = get_lat_lng(self.address)
+    # GPS Update Callback
+    def _update_loc(self, **kwargs):
+        if not self.use_gps:
+            return
+        if kwargs["lat"] is not None and kwargs["lng"] is not None:
+            self._create_map_image({"lat": kwargs["lat"], "lng": kwargs["lng"]})
 
-		self.window.create_map_image(new_loc)
-		self._crime_refresh()
+    # Crime Refresher Function
+    def _crime_refresh(self, source_button=None):
+        self.crime_api.update_query(self.my_loc["lat"], self.my_loc["lng"], self.crime_radius, self.crime_days_filter)
+        all_crimes = self.crime_api.get_crimes()
+        self.update_crimes(all_crimes)
 
-	# Removes all crime data from the list and resets the crime count
-	def remove_crime_list(self):
-		self.window.create_report_frame(self._crime_refresh)		
-		self.crime_count = 0
+    # Location Button callback to download a new map
+    def _refresh_map(self, source_button=None):
+        print("Refreshing map!")
+        try:
+            self.address = self.window.get_current_address()
+        except NameError:
+            # Use cached location
+            pass
 
-	# Updates the list of crimes with the given list
-	def update_crimes(self, crimes_list):
-		self.remove_crime_list()
+        if self.address == "":
+            new_loc = self.my_loc
+        else:
+            new_loc = get_lat_lng(self.address)
 
-		# Re-create the frame holding all the crime reports
-		for crime_report in crimes_list:
-			self._create_crime_frame(crime_report)
+        self.window.create_map_image(new_loc)
+        self._crime_refresh()
 
-		print("Found " + str(self.crime_count) + " crimes.")
+    # Removes all crime data from the list and resets the crime count
+    def remove_crime_list(self):
+        self.window.create_report_frame(self._crime_refresh)
+        self.crime_count = 0
+
+    # Updates the list of crimes with the given list
+    def update_crimes(self, crimes_list):
+        self.remove_crime_list()
+
+        # Re-create the frame holding all the crime reports
+        for crime_report in crimes_list:
+            self._create_crime_frame(crime_report)
+
+        print("Found " + str(self.crime_count) + " crimes.")
