@@ -23,10 +23,11 @@
         font_size: 20
         text: "Refresh"
         pos_hint: {"x": .80, "top": 1}
+		on_press: root._update_location()
     Image:
         pos_hint: {"x": 0, "y": 0}
-        source: 'map.png'
-
+        source: root.map_image_src
+		id: map_image
     BoxLayout:
         orientation: 'vertical'
         size_hint: .5, .95

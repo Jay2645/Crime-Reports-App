@@ -2,6 +2,7 @@
 from kivy.app import App
 from kivy.uix.button import *
 from kivy.uix.widget import Widget
+from kivy.properties import StringProperty
 from kivy.uix.floatlayout import FloatLayout
 from kivy.loader import Loader
 
@@ -61,6 +62,7 @@ class CrimeUI(FloatLayout):
 	coordinates = {} #{"Lat","Lng"} of current location
 	radius = None #For SpotCrime
 	in_days = None #For SpotCrime (how recent are crimes we care about)
+	map_image_src = StringProperty('map.png')
 	
 	#Methods
 	def __init__(self, address="", radius=10, in_days=2):
@@ -87,8 +89,8 @@ class CrimeUI(FloatLayout):
 			self.coordinates["lng"] = CSUF_LNG
 			print("Default location set to " + str(self.coordinates))
 		
-		self.crime_api = GetCrime(self.coordinates["lat"], self.coordinates["lng"], radius, in_days)
-		get_map(self.coordinates["lat"], self.coordinates["lng"])
+		self.crime_api = GetCrime()
+		self._update_location()
 	
 	#_update_location might get called by the gps (if used) or by the user typing in an address and then pressing the "Location" button
 	#updates both the list of crimes and the map image
@@ -103,14 +105,21 @@ class CrimeUI(FloatLayout):
 			self.coordinates = self.gps.coordinates
 			self_crime_refresh()
 			self._update_map()
+		#Otherwise assume this function was called for good reason and refresh everything anyway
+		else:
+			self._crime_refresh()
+			self._update_map()
 		
 	# Crime Refresher Function
 	def _crime_refresh(self):
 		self.crime_api.update_query(self.coordinates["lat"], self.coordinates["lng"], self.radius, self.in_days)
 		all_crimes = self.crime_api.get_crimes()
+		#Delete the old crimes in the GUI
+		for child in self.ids.crime_box.children:
+			self.ids.crime_box.remove_widget(child)
 		#Update the GUI list of crimes
 		for crime in all_crimes:
-			crime_button = Button(text=crime["timestamp"] + ":" + crime["type"] + " at " + crime["location"], font_size=10);
+			crime_button = Button(text=crime["timestamp"] + ":" + crime["type"] + " at " + crime["location"], font_size=10, size_hint=(1,.15));
 			self.ids.crime_box.add_widget(crime_button)
 
 	# Download a new map image - might be called by the gps or by the user typing in an address
@@ -118,7 +127,7 @@ class CrimeUI(FloatLayout):
 		print("Refreshing map!")
 		get_map(self.coordinates["lat"], self.coordinates["lng"])
 		#Display the map in our application's GUI
-		#TODO
+		self.ids.map_image.reload()
 
 	''' Old Jay code - pretty sure only necessary for testing
 	# Removes all crime data from the list and resets the crime count
