@@ -1,7 +1,7 @@
 from plyer import gps
 
 class GPS(gps):
-	_my_loc = None
+	_coordinates = None
 	_callback = None
 
 	def _init_(self, callback, minTime=10000, minDistance=1):
@@ -10,11 +10,7 @@ class GPS(gps):
 		self.start(minTime, minDistance) #Polls every 10 seconds by default
 		self._callback = callback #Allows an additional custom function besides plyers default callback
 		
-	def update_loc(**kwargs):
+	def update_loc(self, **kwargs):
 		if kwargs["lat"] is not None and kwargs["lng"] is not None:
-			my_loc = {"lat":kwargs["lat"],"lng":kwargs["lng"]}
+			_self._coordinates = {"lat":kwargs["lat"],"lng":kwargs["lng"]}
 		if self._callback is not None: self._callback()
-
-	def get_loc():
-		return _my_loc
-		
