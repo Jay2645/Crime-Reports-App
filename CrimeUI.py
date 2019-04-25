@@ -98,8 +98,8 @@ class CrimeUI(FloatLayout):
 			self._crime_refresh()
 			self._update_map()
 		#Otherwise see if the gps' location has changed
-		elif cmp(self.coordinates, gps.coordinates):
-			self.coordinates = gps.coordinates
+		elif self._use_gps and self.coordinates == self.gps.coordinates:
+			self.coordinates = self.gps.coordinates
 			self_crime_refresh()
 			self._update_map()
 		
@@ -108,12 +108,14 @@ class CrimeUI(FloatLayout):
 		self.crime_api.update_query(self.coordinates["lat"], self.coordinates["lng"], self.radius, self.in_days)
 		all_crimes = self.crime_api.get_crimes()
 		#Update the GUI list of crimes
-		#TODO
+		for crime in all_crimes:
+			crime_button = Button(text=crime["timestamp"] + ":" + crime["type"] + " at " + crime["location"], font_size=10);
+			self.ids.crime_box.add_widget(crime_button)
 
 	# Download a new map image - might be called by the gps or by the user typing in an address
-	def _update_map(self, location):
+	def _update_map(self):
 		print("Refreshing map!")
-		get_map(coordinates["lat"], coordinates["lng"])
+		get_map(self.coordinates["lat"], self.coordinates["lng"])
 		#Display the map in our application's GUI
 		#TODO
 

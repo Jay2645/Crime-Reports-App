@@ -6,30 +6,25 @@
     size_hint: .6, .05
 
 <FloatLayout>:
-    TextInput:
+	TextInput:
 		id: txt_loc
-        pos_hint: {"x": 0, "top": 1}
-    Button:
-        font_size: 20
-        text: "Location"
-        pos_hint: {"x": .60, "top": 1}
-		on_press: _update_location
-    Button:
-        font_size: 20
-        text: "Refresh"
-        pos_hint: {"x": .80, "top": 1}
-    Label:
-        font_size: 50
-        text: "Map"
-        size_hint: .4, .95
-        pos_hint: {"x": 0, "y": 0}
-    BoxLayout:
-        orientation: 'vertical'
-        Label:
-            text: "Crimes"
-            size_hint: .6, .95
-            pos_hint: {"right": 1, "y": 0}
-        Label:
-            text: "Crimes"
-            size_hint: .6, .95
-            pos_hint: {"right": 1, "y": 0}
+		pos_hint: {"x": 0, "top": 1}
+	Button:
+		font_size: 20
+		text: "Location"
+		pos_hint: {"x": .60, "top": 1}
+		on_press: root._update_location()
+	Button:
+		font_size: 20
+		text: "Refresh"
+		pos_hint: {"x": .80, "top": 1}
+	Label:
+		font_size: 50
+		text: "Map"
+		size_hint: .4, .95
+		pos_hint: {"x": 0, "y": 0}
+	BoxLayout:
+		id: crime_box
+		orientation: 'vertical'
+		size_hint: .6, .95
+		pos_hint: {"right": 1, "y": 0}
