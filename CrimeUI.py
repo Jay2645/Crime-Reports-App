@@ -6,7 +6,7 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.loader import Loader
 
 # Import GPS stuff
-from gps import GPS
+import CustomGPS
 
 # Import APIs
 from CrimeAPI import GetCrime
@@ -54,13 +54,13 @@ class crimeApp(App):
 
 class CrimeUI(FloatLayout):
 	#Properties
-	def crime_api = None #Reference to CrimeAPI object
-	def gps = None #Reference to GPS object
-	def _use_gps = False
-	def address = "" #An address/location in text format
-	def coordinates = {} #{"Lat","Lng"} of current location
-	def radius #For SpotCrime
-	def in_days #For SpotCrime (how recent are crimes we care about)
+	crime_api = None #Reference to CrimeAPI object
+	gps = None #Reference to GPS object
+	_use_gps = False
+	address = "" #An address/location in text format
+	coordinates = {} #{"Lat","Lng"} of current location
+	radius = None #For SpotCrime
+	in_days = None #For SpotCrime (how recent are crimes we care about)
 	
 	#Methods
 	def __init__(self, address="", radius=10, in_days=2):
@@ -71,8 +71,8 @@ class CrimeUI(FloatLayout):
 
 		#GPS functionality if applicable - mobile only (should support both iPhone and android)
 		try:
-			self.gps = GPS(_update_location)
-			self.use_gps = True
+			self.gps = CustomGPS(_update_location)
+			self._use_gps = True
 		except:
 			self._use_gps = False
 			print("No GPS configured, disabling GPS queries")
@@ -81,13 +81,13 @@ class CrimeUI(FloatLayout):
 		if address != "":
 			self.coordinates = get_lat_lng(address)
 		#If no GPS or text address, default to CSUF
-		else if not self._use_gps:
+		elif not self._use_gps:
 			self.coordinates["lat"] = CSUF_LAT
 			self.coordinates["lng"] = CSUF_LNG
 			print("Default location set to " + str(self.coordinates))
 		
 		self.crime_api = GetCrime(self.coordinates["lat"], self.coordinates["lng"], radius, in_days)
-		get_map(coordinates["lat"], coordinates["lng"])
+		get_map(self.coordinates["lat"], self.coordinates["lng"])
 	
 	#_update_location might get called by the gps (if used) or by the user typing in an address and then pressing the "Location" button
 	#updates both the list of crimes and the map image
@@ -95,13 +95,13 @@ class CrimeUI(FloatLayout):
 		#Prioritize the user's input in the text box
 		if self.ids.txt_loc.text != "":
 			self.coordinates = get_lat_lng(self.ids.txt_loc.text)
-			_crime_refresh()
-			_update_map()
+			self._crime_refresh()
+			self._update_map()
 		#Otherwise see if the gps' location has changed
-		else if cmp(self.coordinates, gps.coordinates):
+		elif cmp(self.coordinates, gps.coordinates):
 			self.coordinates = gps.coordinates
-			_crime_refresh()
-			_update_map()
+			self_crime_refresh()
+			self._update_map()
 		
 	# Crime Refresher Function
 	def _crime_refresh(self):
