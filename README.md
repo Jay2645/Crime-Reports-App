@@ -9,6 +9,6 @@ Python 3.4+.
 
 Install the following packages using [pip](https://pip.pypa.io/en/stable/installing/):
 
-`pip install spotcrime`
-`pip install plyer`
+`pip install spotcrime`  
+`pip install plyer`  
 `pip install kivy`
