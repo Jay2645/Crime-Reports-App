@@ -70,12 +70,13 @@ class CrimeUI(FloatLayout):
 		self.in_days = in_days
 
 		#GPS functionality if applicable - mobile only (should support both iPhone and android)
-		try:
+		'''try:
 			self.gps = CustomGPS(_update_location)
 			self._use_gps = True
 		except:
 			self._use_gps = False
-			print("No GPS configured, disabling GPS queries")
+			print("No GPS configured, disabling GPS queries")'''
+		self._use_gps = False
 
 		#Get latitude and longitude of passed-in address
 		if address != "":

@@ -10,13 +10,15 @@
     allow_stretch: True
     keep_ratio: False
 
-<FloatLayout>:
+<CrimeUI>:
     TextInput:
         pos_hint: {"x": 0, "top": 1}
+		id: txt_loc
     Button:
         font_size: 20
         text: "Location"
         pos_hint: {"x": .60, "top": 1}
+		on_press: root._update_location()
     Button:
         font_size: 20
         text: "Refresh"
@@ -27,11 +29,6 @@
 
     BoxLayout:
         orientation: 'vertical'
-        Label:
-            text: "Crimes"
-            size_hint: .5, .95
-            pos_hint: {"right": 1, "y": 0}
-        Label:
-            text: "Crimes"
-            size_hint: .5, .95
-            pos_hint: {"right": 1, "y": 0}
+        size_hint: .5, .95
+        pos_hint: {"right": 1, "y": 0}
+        id: crime_box
