@@ -1,22 +1,20 @@
 from plyer import gps
 
-my_gps = None
-my_loc = None
+class GPS(gps):
+	_my_loc = None
+	_callback = None
 
-def start_gps_poll():
-	my_gps = gps() #Plyer should wrap this to a gps handler appropriate to the operating system
-	my_gps.configure(on_location=update_loc) #Configs gps object to use update_loc function as a callback
-	my_gps.start(minTime=10000, minDistance=1) #Poll every 10 seconds
-	
-def stop_gps_poll():
-	if my_gps is not None:
-		my_gps.stop()
+	def _init_(self, callback, minTime=10000, minDistance=1):
+		super()._init_() #Plyer should wrap this to a gps handler appropriate to the operating system
+		self.configure(on_location=update_loc) #Configs gps object to use update_loc function as a callback
+		self.start(minTime, minDistance) #Polls every 10 seconds by default
+		self._callback = callback #Allows an additional custom function besides plyers default callback
 		
-def update_loc(**kwargs):
-	if kwargs["lat"] is not None and kwargs["lng"] is not None:
-		my_loc = {"lat":kwargs["lat"],"lng":kwargs["lng"]}
+	def update_loc(**kwargs):
+		if kwargs["lat"] is not None and kwargs["lng"] is not None:
+			my_loc = {"lat":kwargs["lat"],"lng":kwargs["lng"]}
+		if self._callback is not None: self._callback()
 
-def get_gps():
-	return my_gps
-def get_loc():
-	return my_loc
+	def get_loc():
+		return _my_loc
+		

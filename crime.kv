@@ -7,11 +7,13 @@
 
 <FloatLayout>:
     TextInput:
+		id: txt_loc
         pos_hint: {"x": 0, "top": 1}
     Button:
         font_size: 20
         text: "Location"
         pos_hint: {"x": .60, "top": 1}
+		on_press: _update_map(txt_loc.text)
     Button:
         font_size: 20
         text: "Refresh"
