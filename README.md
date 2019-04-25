@@ -10,5 +10,5 @@ Python 3.4+.
 Install the following packages using [pip](https://pip.pypa.io/en/stable/installing/):
 
 `pip install spotcrime`
-
-`pip install toga==0.3.0.dev11`
+`pip install plyer`
+`pip install kivy`
