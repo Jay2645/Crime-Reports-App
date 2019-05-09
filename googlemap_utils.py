@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 import json
-from io import BytesIO
-from tkinter import PhotoImage
-#import plyer #use this to get gps coords later
 import requests
 
 #Downloads a static png of the map with the given parameters. Returns true or false based on success
-def get_map(lat=0,lng=0,zoom=16,width=400,height=500,format='png'):
+#pins, if supplied, is an array of strings which should be formatted like "label:mylabel|color:mycolor|latitude|longitude"
+def get_map(pins=None,lat=0,lng=0,zoom=15,width=400,height=500,format='png'):
 	with open("google_maps_api_key.txt", "r") as fh:
 		api_key = fh.readline()
 		fh.close()
@@ -16,8 +14,12 @@ def get_map(lat=0,lng=0,zoom=16,width=400,height=500,format='png'):
 		params["zoom"]=zoom
 		params["size"]=f"{width}x{height}"
 		params["format"]=format
-		'''note: can add "markers" separated by pipes to params to add typical google teardrop markers to the map. Consider doing this for the crime spots'''
+		params["scale"]=2
+		if pins:
+			params["markers"]=pins[:15]
 		res = requests.get("https://maps.googleapis.com/maps/api/staticmap", params=params)
+		#print(res.headers)
+		#print(res.request.url)
 		with open("map." + format, "wb") as fh:
 			fh.write(res.content)
 			fh.close()

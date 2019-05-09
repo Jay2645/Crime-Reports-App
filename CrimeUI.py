@@ -14,6 +14,7 @@ from CrimeAPI import GetCrime
 from googlemap_utils import get_map, get_lat_lng
 
 #import os
+from functools import partial
 
 CSUF_LAT = 33.8813416
 CSUF_LNG = -117.8866257
@@ -68,10 +69,14 @@ class CrimeUI(FloatLayout):
 	def __init__(self, address="", radius=10, in_days=2):
 		super().__init__()
 		self.address = address
-		self.radius = radius
+		#self.radius = radius
+		#overwriting radius to be based on the zoom level of our google map
+		#zoom level 15 is roughly 22.43 miles per pixel and our map is 400x500, so the radius should be:
+		self.radius = 500/22.43
 		self.in_days = in_days
 
 		#GPS functionality if applicable - mobile only (should support both iPhone and android)
+		#DISABLED BECAUSE NOT IMPLEMENTED YET BY PLYER
 		'''try:
 			self.gps = CustomGPS(_update_location)
 			self._use_gps = True
@@ -89,7 +94,7 @@ class CrimeUI(FloatLayout):
 			self.coordinates["lng"] = CSUF_LNG
 			print("Default location set to " + str(self.coordinates))
 		
-		self.crime_api = GetCrime()
+		self.crime_api = GetCrime(self.coordinates["lat"],self.coordinates["lng"],self.radius,in_days)
 		self._update_location()
 	
 	#_update_location might get called by the gps (if used) or by the user typing in an address and then pressing the "Location" button
@@ -109,22 +114,38 @@ class CrimeUI(FloatLayout):
 		else:
 			self._crime_refresh()
 			self._update_map()
-		
+	#Re-Center and calculate everything based on a new position
+	def _move_to(self, lat, lng):
+		self.coordinates["lat"] = lat
+		self.coordinates["lng"] = lng
+		print("Moving to " + str(lat) + "," + str(lng))
+		self._update_location()
 	# Crime Refresher Function
 	def _crime_refresh(self):
 		self.crime_api.update_query(self.coordinates["lat"], self.coordinates["lng"], self.radius, self.in_days)
-		all_crimes = self.crime_api.get_crimes()
+		self.all_crimes = self.crime_api.get_crimes()
 		#Delete the old crimes in the GUI
 		self.ids.crime_box.clear_widgets()
 		#Update the GUI list of crimes
-		for crime in all_crimes:
-			crime_button = Button(text=crime["timestamp"] + ":" + crime["type"] + " at " + crime["location"], font_size='12dp', size_hint=(1,self.height/len(all_crimes)));
+		i=0
+		for crime in self.all_crimes:
+			crime_button = Button(text=str(i) + ":" + crime["type"] + " at " + crime["timestamp"], font_size='12dp', size_hint=(1,self.height/len(self.all_crimes)));
+			callback = lambda x,y,o:self._move_to(x, y)
+			crime_button.bind(on_press = partial(callback, crime["lat"], crime["lon"]))
+			i+=1
 			self.ids.crime_box.add_widget(crime_button)
 
 	# Download a new map image - might be called by the gps or by the user typing in an address
 	def _update_map(self):
 		print("Refreshing map!")
-		get_map(self.coordinates["lat"], self.coordinates["lng"])
+		pins = None
+		if self.all_crimes:
+			pins = []
+			i=0
+			for crime in self.all_crimes:
+				pins.append("color:red|label:" + str(i) + "|" + str(crime["lat"]) + "," + str(crime["lon"]))
+				i+=1
+		get_map(pins, self.coordinates["lat"], self.coordinates["lng"])
 		#Display the map in our application's GUI
 		self.ids.map_image.reload()
 
