@@ -1,37 +1,37 @@
 <Button>:
-    font_size: 25
-    size_hint: .2, .05
+	font_size: 25
+	size_hint: .2, .05
 
 <TextInput>:
-    size_hint: .6, .05
+	size_hint: .6, .05
 
 <Image>
-    size_hint: .5, .95
-    allow_stretch: True
-    keep_ratio: True
+	size_hint: .5, .95
+	allow_stretch: True
+	keep_ratio: True
 
 <CrimeUI>:
-    TextInput:
-        pos_hint: {"x": 0, "top": 1}
+	TextInput:
+		pos_hint: {"x": 0, "top": 1}
 		id: txt_loc
-    Button:
-        font_size: 20
-        text: "Location"
-	background_normal: 'button.png'
-        pos_hint: {"x": .60, "top": 1}
+	Button:
+		font_size: 20
+		text: "Location"
+		background_normal: 'button.png'
+		pos_hint: {"x": .60, "top": 1}
 		on_press: root._update_location()
-    Button:
-        font_size: 20
-        text: "Refresh"
-	background_normal: 'button.png'
-        pos_hint: {"x": .80, "top": 1}
+	Button:
+		font_size: 20
+		text: "Refresh"
+		background_normal: 'button.png'
+		pos_hint: {"x": .80, "top": 1}
 		on_press: root._update_location()
-    Image:
-        pos_hint: {"x": 0, "y": 0}
-        source: root.map_image_src
+	Image:
+		pos_hint: {"x": 0, "y": 0}
+		source: root.map_image_src
 		id: map_image
-    BoxLayout:
-        orientation: 'vertical'
-        size_hint: .5, .95
-        pos_hint: {"right": 1, "y": 0}
-        id: crime_box
+	BoxLayout:
+		orientation: 'vertical'
+		size_hint: .5, .95
+		pos_hint: {"right": 1, "y": 0}
+		id: crime_box
